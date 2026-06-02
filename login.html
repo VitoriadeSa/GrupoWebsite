@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Greenherb — Login</title>
+<style>
+body{margin:0;font-family:Arial;height:100vh;display:flex;justify-content:center;align-items:center;
+    background:linear-gradient(rgba(0,60,20,.6),rgba(0,60,20,.6)),url('css/green.png') center/cover no-repeat;}
+.box{background:#fff;padding:40px;border-radius:12px;width:320px;box-shadow:0 10px 30px rgba(0,0,0,.3);}
+h1{text-align:center;color:#2f7d32;margin-bottom:20px;}
+input{width:100%;padding:10px;margin:10px 0;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;}
+button{width:100%;padding:10px;background:#2f7d32;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:16px;}
+button:hover{background:#256428;}
+.erro{background:#fee2e2;color:#dc2626;padding:8px 12px;border-radius:8px;font-size:13px;margin-top:10px;display:none;}
+.links{margin-top:15px;display:flex;justify-content:space-between;font-size:13px;}
+a{color:#2f7d32;text-decoration:none;}
+a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="box">
+    <h1>🌿 Entrar</h1>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <div class="erro" id="mensagemErro"></div>
+    <button onclick="fazerLogin()">Login</button>
+</div>
+<script>
+async function fazerLogin() {
+    const email    = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const erroEl   = document.getElementById('mensagemErro');
+    erroEl.style.display = 'none';
+    if (!email || !password) {
+        erroEl.textContent = 'Preenche o email e a password.';
+        erroEl.style.display = 'block'; return;
+    }
+    try {
+        const res  = await fetch('http://localhost:5000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('utilizador', JSON.stringify(data.utilizador));
+            window.location.href = 'index.html';
+        } else {
+            erroEl.textContent = data.erro;
+            erroEl.style.display = 'block';
+        }
+    } catch(e) {
+        erroEl.textContent = 'Erro de ligação ao servidor.';
+        erroEl.style.display = 'block';
+    }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') fazerLogin(); });
+</script>
+</body>
+</html>

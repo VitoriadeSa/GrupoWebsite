@@ -1,0 +1,8 @@
+ervaAromatica,tipo,planoRega,fertilizacao,duracaoPrevistaDias,tempIdeal,humIdeal,luzIdeal
+Manjericão,regular,2x por dia,Quinzenal,90,22,65,4000
+Hortelã,regular,3x por dia,Mensal,60,20,70,3500
+Alecrim,regular,1x por dia,Mensal,120,25,45,5000
+Tomilho,regular,1x por dia,Bimensal,120,22,48,4500
+Coentros,regular,2x por dia,Quinzenal,45,18,60,3000
+Manjericão,emergência,Manual,Semanal,30,22,65,4000
+Hortelã,pontual,Manual,Manual,7,20,70,3500

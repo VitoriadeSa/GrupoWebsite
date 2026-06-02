@@ -1,0 +1,6 @@
+codigo,nome,area,estado
+L-001,Estufa A - Bloco 1,120,ativo
+L-002,Estufa A - Bloco 2,80,ativo
+L-003,Estufa B - Bloco Principal,200,ativo
+L-004,Estufa C - Bloco Experimental,60,comprometido
+L-005,Estufa A - Bloco 3,100,concluído

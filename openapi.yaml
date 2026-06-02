@@ -1,0 +1,15 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /ervas/import:
+    post:
+      summary: Importa ervas via CSV
+      responses:
+        '200':
+          description: Importação concluída

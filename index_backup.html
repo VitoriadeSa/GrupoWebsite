@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greenherb</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+    --green:#2e7d32;
+    --green-light:#f0fdf4;
+    --yellow:#f59e0b;
+    --red:#dc2626;
+    --bg:#f4f7f6;
+    --card:#fff;
+    --text:#1e293b;
+    --muted:#64748b;
+    --border:#e2e8f0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Inter,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    height:100vh;
+    overflow:hidden;}
+html, body{
+    margin:0;
+    padding:0;
+}    
+header{
+    background:var(--green);
+    color:#fff;
+    padding:14px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    height:60px;
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:1000;
+}
+.user-box{display:flex;flex-direction:column;align-items:flex-end;font-size:12px;gap:4px;}
+.role{background:#ffffff22;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.container{
+    /*display:flex;*/
+    margin-top:60px;
+   /* height:calc(100vh - 60px);*/
+}
+.sidebar{
+    width:220px;
+    background:#fff;
+    border-right:1px solid var(--border);
+
+    position:fixed;
+    top:60px;
+    left:0;
+    bottom:0;
+
+    display:flex;
+    flex-direction:column;
+}
+.sidebar a{display:block;padding:12px 18px;cursor:pointer;color:var(--muted);text-decoration:none;border-left:3px solid transparent;}
+.sidebar a:hover,.sidebar a.active{background:var(--green-light);color:var(--green);border-left:3px solid var(--green);}
+.sidebar a.logout{color:#dc2626;font-weight:600;border-top:1px solid var(--border);position:absolute;bottom:0;left:0;width:100%;background:#fff;}
+.sidebar a.logout:hover{background:#fee2e2;color:#dc2626;border-left:3px solid #dc2626;}
+main.content{
+    margin:0;
+}
+.content{
+    position:fixed;
+
+    top:60px;
+    left:220px;
+    right:0;
+    bottom:0;
+
+    padding:25px;
+
+    overflow-y:auto;
+}
+h2{margin-bottom:20px;}
+h3{margin-bottom:10px;}
+.card{background:var(--card);border:1px solid var(--border);padding:16px;border-radius:12px;margin-bottom:15px;width:100%;}
+label{font-size:13px;font-weight:600;display:block;margin-top:10px;}
+input,select,textarea{width:100%;padding:10px;margin:6px 0 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;}
+textarea{resize:vertical;min-height:80px;}
+.btn{background:var(--green);color:#fff;padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
+.btn:hover{background:#1b5e20;}
+.btn-danger{background:#dc2626;}
+.btn-danger:hover{background:#b91c1c;}
+.btn-warning{background:#d97706;}
+.btn-warning:hover{background:#b45309;}
+.btn-sm{padding:6px 10px;font-size:12px;}
+.alert-green{border-left:5px solid var(--green);}
+.alert-yellow{border-left:5px solid var(--yellow);}
+.alert-red{border-left:5px solid var(--red);}
+.hidden{display:none;}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:15px;}
+table{width:100%;border-collapse:collapse;}
+th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:13px;}
+th{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-regular{background:#dbeafe;color:#1d4ed8;}
+.badge-emergencia{background:#fee2e2;color:#dc2626;}
+.badge-pontual{background:#fef9c3;color:#92400e;}
+.badge-ok{background:#dcfce7;color:#166534;}
+.badge-pendente{background:#fef9c3;color:#92400e;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+.stat-num{font-size:2rem;font-weight:700;color:var(--green);}
+.stat-label{color:var(--muted);font-size:13px;}
+.msg-success{background:#dcfce7;color:#166534;padding:10px 14px;border-radius:8px;margin-bottom:10px;}
+.msg-error{background:#fee2e2;color:#dc2626;padding:10px 14px;border-radius:8px;margin-bottom:10px;}
+.search-bar{display:flex;gap:10px;margin-bottom:15px;align-items:center;}
+.search-bar input{margin:0;max-width:300px;}
+.plano-row td:first-child{font-weight:600;}
+#loadingOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;display:none;}
+.spinner{width:40px;height:40px;border:4px solid var(--border);border-top:4px solid var(--green);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay"><div class="spinner"></div></div>
+
+<header>
+    <h1>🌿 GREENHERB</h1>
+    <div class="user-box">
+        <div class="role" id="userRole">–</div>
+        <div style="opacity:.9;font-size:11px;" id="userName">–</div>
+    </div>
+</header>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <a onclick="mostrarView('dashboard')">📊 Dashboard</a>
+    <a onclick="mostrarView('plantas')">🌱 Plantas</a>
+    <a onclick="mostrarView('planos')">📋 Planos</a>
+    <a onclick="mostrarView('lotes')">🏡 Lotes</a>
+    <a onclick="mostrarView('medicoes')">📈 Medições</a>
+    <a onclick="mostrarView('alertas')">⚠️ Alertas</a>
+    <a onclick="mostrarView('guia')">📖 Guia</a>
+    <a onclick="mostrarView('historico')">📜 Histórico</a>
+    <a id="menuCSV" onclick="mostrarView('csv')">📂 CSV</a>
+    <a id="menuUtilizadores" onclick="mostrarView('utilizadores')">👤 Utilizadores</a>
+    <a class="logout" onclick="logout()">🚪 Sair</a>
+</aside>
+
+<main class="content">
+
+<!-- ===== DASHBOARD ===== -->
+<section id="view-dashboard" class="hidden">
+<h2>📊 Dashboard</h2>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-num" id="stat-plantas">–</div>
+        <div class="stat-label">Plantas registadas</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num" id="stat-planos">–</div>
+        <div class="stat-label">Planos ativos</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-num" id="stat-alertas">0</div>
+        <div class="stat-label">Alertas pendentes</div>
+    </div>
+</div>
+<div class="card">
+    <h3>Últimos Planos Registados</h3>
+    <table>
+        <thead><tr><th>Erva</th><th>Tipo</th><th>Data</th><th>Estado</th></tr></thead>
+        <tbody id="dashboard-planos"></tbody>
+    </table>
+</div>
+<div class="card">
+    <h3>Últimas Plantas Importadas</h3>
+    <table>
+        <thead><tr><th>Lote</th><th>Erva</th><th>Temperatura</th><th>Humidade</th></tr></thead>
+        <tbody id="dashboard-plantas"></tbody>
+    </table>
+</div>
+</section>
+
+<!-- ===== PLANTAS ===== -->
+<section id="view-plantas" class="hidden">
+<h2>🌱 Plantas</h2>
+<div class="search-bar">
+    <input type="text" id="filtroPlanta" placeholder="Filtrar por erva ou lote..." oninput="filtrarPlantas()">
+    <button class="btn btn-sm" onclick="carregarPlantas()">↺ Atualizar</button>
+</div>
+<div class="card">
+    <table>
+        <thead><tr><th>Lote</th><th>Erva</th><th>Temperatura</th><th>Humidade</th></tr></thead>
+        <tbody id="listaPlantas"><tr><td colspan="4" style="text-align:center;color:var(--muted);">A carregar...</td></tr></tbody>
+    </table>
+</div>
+</section>
+
+<!-- ===== PLANOS ===== -->
+<section id="view-planos" class="hidden">
+<h2>📋 Planos de Cultivo</h2>
+
+<!-- Formulário -->
+<div class="card" id="card-form-plano">
+    <h3 id="titulo-form-plano">➕ Novo Plano</h3>
+    <div id="msg-plano"></div>
+
+    <label>Erva Aromática</label>
+    <select id="plano-erva">
+        <option>Manjericão</option><option>Hortelã</option><option>Coentros</option>
+        <option>Salsa</option><option>Alecrim</option><option>Tomilho</option>
+        <option>Orégãos</option><option>Erva-cidreira</option><option>Lavanda</option>
+        <option>Manjerona</option><option>Cebolinho</option><option>Louro</option>
+        <option>Salvia</option><option>Camomila</option><option>Funcho</option>
+        <option>Alfazema</option><option>Estragão</option><option>Endro</option>
+    </select>
+
+    <label>Tipo de Plano</label>
+    <select id="tipoPlano" onchange="renderPlanoForm()">
+        <option value="">-- Selecionar --</option>
+        <option value="regular">Regular</option>
+        <option value="emergencia">Emergência</option>
+        <option value="pontual">Pontual</option>
+    </select>
+
+    <div id="plano-dinamico"></div>
+
+    <div style="display:flex;gap:10px;margin-top:10px;">
+        <button class="btn" onclick="guardarPlano()">💾 Guardar Plano</button>
+        <button class="btn" style="background:#64748b;" onclick="cancelarEdicaoPlano()">Cancelar</button>
+    </div>
+</div>
+
+<!-- Lista de Planos -->
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3>Lista de Planos</h3>
+        <div style="display:flex;gap:8px;">
+            <select id="filtroTipoPlano" onchange="carregarPlanos()" style="width:auto;margin:0;padding:6px;">
+                <option value="">Todos</option>
+                <option value="regular">Regular</option>
+                <option value="emergencia">Emergência</option>
+                <option value="pontual">Pontual</option>
+            </select>
+            <button class="btn btn-sm" onclick="carregarPlanos()">↺ Atualizar</button>
+        </div>
+    </div>
+    <table>
+        <thead><tr><th>Erva</th><th>Tipo</th><th>Detalhes</th><th>Data</th><th>Ações</th></tr></thead>
+        <tbody id="listaPlanos"><tr><td colspan="5" style="text-align:center;color:var(--muted);">A carregar...</td></tr></tbody>
+    </table>
+</div>
+</section>
+
+
+<!-- ===== LOTES ===== -->
+<section id="view-lotes" class="hidden">
+    <h2>🏡 Lotes de Cultivo</h2>
+    <div class="card">
+        <h3>Novo Lote</h3>
+        <label>Código</label><input id="lote-codigo" type="text" placeholder="ex: L-001">
+        <label>Nome</label><input id="lote-nome" type="text" placeholder="ex: Estufa A - Bloco 1">
+        <label>Área (m²)</label><input id="lote-area" type="number" placeholder="ex: 50">
+        <label>Estado</label>
+        <select id="lote-estado">
+            <option value="ativo">Ativo</option>
+            <option value="concluído">Concluído</option>
+            <option value="comprometido">Comprometido</option>
+        </select>
+        <button class="btn" onclick="criarLote()">➕ Criar Lote</button>
+        <span id="msg-lote" style="margin-left:10px;"></span>
+    </div>
+    <div class="card">
+        <table>
+            <thead><tr><th>Código</th><th>Nome</th><th>Área</th><th>Estado</th><th>Criado em</th></tr></thead>
+            <tbody id="listaLotes"><tr><td colspan="5" style="text-align:center;color:var(--muted);">A carregar...</td></tr></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ===== MEDIÇÕES ===== -->
+<section id="view-medicoes" class="hidden">
+    <h2>📈 Medições Ambientais</h2>
+    <div class="card">
+        <h3>Registar Medição</h3>
+        <label>Plano de Cultivo</label>
+        <select id="med-plano" onchange="preencherInfoPlano()">
+            <option value="">-- Selecionar Plano --</option>
+        </select>
+        <div id="med-plano-info" style="margin:8px 0;padding:8px;background:var(--bg);border-radius:6px;font-size:13px;color:var(--muted);display:none;">
+            🌿 <span id="med-plano-erva">–</span> &nbsp;|&nbsp;
+            🌡 Ideal: <span id="med-plano-temp">–</span>°C &nbsp;|&nbsp;
+            💧 Ideal: <span id="med-plano-hum">–</span>% &nbsp;|&nbsp;
+            ☀️ Ideal: <span id="med-plano-luz">–</span> lux
+        </div>
+        <label>Temperatura (°C)</label>
+        <input id="med-temp" type="number" placeholder="ex: 22.5" step="0.1">
+        <label>Humidade (%)</label>
+        <input id="med-hum" type="number" placeholder="ex: 65" step="0.1">
+        <label>Luminosidade (lux)</label>
+        <input id="med-luz" type="number" placeholder="ex: 4000">
+        <button class="btn" onclick="registarMedicao()">📊 Registar Medição</button>
+        <span id="msg-medicao" style="margin-left:10px;"></span>
+    </div>
+    <div class="card">
+        <h3>Histórico de Medições</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Lote</th>
+                    <th>Erva</th>
+                    <th>Temperatura</th>
+                    <th>Humidade</th>
+                    <th>Luminosidade</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody id="listaMedicoes"></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ===== ALERTAS ===== -->
+<section id="view-alertas" class="hidden">
+<h2>⚠️ Alertas</h2>
+
+<!-- MODO MANUAL / AUTOMÁTICO -->
+<div class="card" id="card-modo" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+  <strong>🤖 Modo do Sistema:</strong>
+  <span id="modo-badge" style="font-size:1.1em;font-weight:bold;">–</span>
+  <button id="btn-modo-manual" class="btn" style="background:#6b7280;" onclick="alterarModo('Manual')">⚙️ Manual</button>
+  <button id="btn-modo-auto"   class="btn" style="background:#15803d;" onclick="alterarModo('Automatico')">🤖 Automático</button>
+  <small id="modo-info" style="color:var(--muted);flex-basis:100%;">Em modo <b>Manual</b>, as ações são apenas sugeridas. Em modo <b>Automático</b>, o sistema executa rega e ventilação automaticamente quando os valores saem dos limites definidos no plano.</small>
+</div>
+
+<!-- FILTROS -->
+<div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+  <label>Estado:</label>
+  <select id="filtro-estado-alerta" onchange="carregarAlertas()">
+    <option value="">Todos</option>
+    <option value="Pendente">Pendente</option>
+    <option value="Resolvido">Resolvido</option>
+    <option value="Ignorado">Ignorado</option>
+  </select>
+  <label>Nível:</label>
+  <select id="filtro-nivel-alerta" onchange="carregarAlertas()">
+    <option value="">Todos</option>
+    <option value="Informativo">Informativo</option>
+    <option value="Aviso">Aviso</option>
+    <option value="Crítico">Crítico</option>
+  </select>
+</div>
+
+<div id="lista-alertas"></div>
+</section>
+
+<!-- ===== GUIA ===== -->
+<section id="view-guia" class="hidden">
+<h2>📖 Guia de Cultivo</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+    <div class="card"><h3>Manjericão</h3><p>🌡 20–25°C · 💧 60–70%</p></div>
+    <div class="card"><h3>Hortelã</h3><p>🌡 18–24°C · 💧 65–75%</p></div>
+    <div class="card"><h3>Coentros</h3><p>🌡 15–22°C · 💧 50–60%</p></div>
+    <div class="card"><h3>Salsa</h3><p>🌡 15–20°C · 💧 55–65%</p></div>
+    <div class="card"><h3>Alecrim</h3><p>🌡 18–30°C · 💧 40–50%</p></div>
+    <div class="card"><h3>Tomilho</h3><p>🌡 15–25°C · 💧 40–50%</p></div>
+    <div class="card"><h3>Orégãos</h3><p>🌡 20–28°C · 💧 45–55%</p></div>
+    <div class="card"><h3>Lavanda</h3><p>🌡 20–30°C · 💧 35–45%</p></div>
+    <div class="card"><h3>Erva-cidreira</h3><p>🌡 18–25°C · 💧 60–70%</p></div>
+    <div class="card"><h3>Manjerona</h3><p>🌡 20–25°C · 💧 50–60%</p></div>
+    <div class="card"><h3>Cebolinho</h3><p>🌡 15–22°C · 💧 60–70%</p></div>
+    <div class="card"><h3>Louro</h3><p>🌡 18–25°C · 💧 45–55%</p></div>
+    <div class="card"><h3>Salvia</h3><p>🌡 18–30°C · 💧 40–50%</p></div>
+    <div class="card"><h3>Camomila</h3><p>🌡 18–25°C · 💧 55–65%</p></div>
+    <div class="card"><h3>Funcho</h3><p>🌡 18–25°C · 💧 50–60%</p></div>
+    <div class="card"><h3>Alfazema</h3><p>🌡 20–30°C · 💧 35–45%</p></div>
+    <div class="card"><h3>Estragão</h3><p>🌡 18–24°C · 💧 50–60%</p></div>
+    <div class="card"><h3>Endro</h3><p>🌡 15–22°C · 💧 55–65%</p></div>
+</div>
+</section>
+
+<!-- ===== Historico ===== -->
+<section id="view-historico" class="hidden">
+    <h2>📜 Histórico</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Utilizador</th>
+                    <th>Ação</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+                <tbody id="listaHistorico">
+            </tbody>
+        </table>
+    </div>
+    <button class="btn" style="background:#166534; margin-top:10px;" onclick="exportarHCSV()">
+    📊 Exportar Histórico CSV
+</button>
+</section>
+
+<!-- ===== CSV ===== -->
+<section id="view-csv" class="hidden">
+<h2>📥 Importar CSV</h2>
+<div class="card">
+    <p style="margin-bottom:12px;color:var(--muted);font-size:13px;">Formato esperado: <code>lote,erva,temperatura,humidade</code> (com cabeçalho)</p>
+    <label>Ficheiro CSV</label>
+    <input type="file" id="csvFile" accept=".csv">
+    <div id="msg-csv"></div>
+    <button class="btn" onclick="uploadCSV()">📤 Importar</button>
+</div>
+<h2>📥 Exportar CSV</h2>
+<div class="card">
+    <button class="btn" onclick="exportarCSV()">
+        📥 Exportar
+    </button>
+</div>
+<div class="card">
+    <h3>Exemplo de ficheiro CSV válido</h3>
+    <pre style="background:#f8fafc;padding:12px;border-radius:8px;font-size:13px;">lote,erva,temperatura,humidade
+L-001,Manjericão,22,65
+L-002,Hortelã,20,70
+L-003,Alecrim,25,45</pre>
+    <button class="btn btn-sm" style="margin-top:10px;background:#475569;" onclick="downloadExemplo()">⬇ Download Exemplo</button>
+</div>
+</section>
+
+<!-- ===== UTILIZADORES ===== -->
+<section id="view-utilizadores" class="hidden">
+<h2>👤 Gestão de Utilizadores</h2>
+
+<div class="card">
+    <h3>Criar Novo Utilizador</h3>
+    <div id="msg-utilizadores"></div>
+    <label>Nome</label>
+    <input type="text" id="novoNome" placeholder="Nome completo">
+    <label>Email</label>
+    <input type="email" id="novoEmail" placeholder="email@exemplo.com">
+    <label>Password</label>
+    <input type="password" id="novoPassword" placeholder="Mínimo 6 caracteres">
+    <label>Perfil</label>
+    <select id="novoPerfil">
+        <option value="Técnico">Técnico</option>
+        <option value="Responsável">Responsável</option>
+        <option value="Administrador">Administrador</option>
+    </select>
+    <button class="btn" onclick="criarUtilizador()">➕ Criar Utilizador</button>
+</div>
+
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3>Lista de Utilizadores</h3>
+        <button class="btn btn-sm" onclick="carregarUtilizadores()">↺ Atualizar</button>
+    </div>
+    <table>
+        <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Ações</th></tr></thead>
+        <tbody id="listaUtilizadores"><tr><td colspan="4" style="text-align:center;color:var(--muted);">A carregar...</td></tr></tbody>
+    </table>
+</div>
+</section>
+
+</main>
+</div>
+
+<script>
+const API = 'http://localhost:5000/api';
+let planosCache = [];
+let plantasCache = [];
+let editandoPlanoId = null;
+
+// ===========================
+// AUTH & INIT
+// ===========================
+function getToken() { return localStorage.getItem('token'); }
+function getUser()  { return JSON.parse(localStorage.getItem('utilizador') || 'null'); }
+
+function authHeaders() {
+    return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = 'login.html';
+}
+
+function mostrarLoading(v) {
+    document.getElementById('loadingOverlay').style.display = v ? 'flex' : 'none';
+}
+
+window.addEventListener('load', () => {
+    const user = getUser();
+    if (!user) { window.location.href = 'login.html'; return; }
+
+    document.getElementById('userRole').innerText = user.perfil;
+    document.getElementById('userName').innerText = user.nome;
+
+    // Ocultar menus por perfil
+    if (user.perfil !== 'Administrador') {
+        document.getElementById('menuCSV').style.display = 'none';
+        document.getElementById('menuUtilizadores').style.display = 'none';
+    }
+
+    mostrarView('dashboard');
+});
+
+// ===========================
+// NAVEGAÇÃO
+// ===========================
+function mostrarView(name) {
+    const user = getUser();
+    // Proteção de rotas
+    if ((name === 'utilizadores' || name === 'csv') && user?.perfil !== 'Administrador') {
+        alert('Apenas Administradores têm acesso a esta secção.');
+        return;
+    }
+
+    document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
+    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+
+    const section = document.getElementById('view-' + name);
+    if (section) section.classList.remove('hidden');
+
+    // Carregar dados conforme view
+    if (name === 'dashboard')    carregarDashboard();
+    if (name === 'plantas')      carregarPlantas();
+    if (name === 'planos')       carregarPlanos();
+    if (name === 'alertas')      carregarAlertas();
+    if (name === 'utilizadores') carregarUtilizadores();
+    if (name === 'historico') carregarHistorico();
+    if(name === "lotes")    carregarLotes();
+    if(name === "medicoes") {carregarMedicoes(); carregarPlanosParaMedicao();}
+    if(name === "alertas") carregarModo();
+}
+
+// ===========================
+// DASHBOARD
+// ===========================
+async function carregarDashboard() {
+    try {
+        const [rPlantas, rPlanos] = await Promise.all([
+            fetch(`${API}/plantas`, { headers: authHeaders() }),
+            fetch(`${API}/planos`,  { headers: authHeaders() })
+        ]);
+        const plantas = await rPlantas.json();
+        const planos  = await rPlanos.json();
+
+        document.getElementById('stat-plantas').innerText = Array.isArray(plantas) ? plantas.length : '–';
+        document.getElementById('stat-planos').innerText  = Array.isArray(planos)  ? planos.length  : '–';
+
+        // Últimos 5 planos
+        const tbody = document.getElementById('dashboard-planos');
+        tbody.innerHTML = '';
+        (Array.isArray(planos) ? planos.slice(0,5) : []).forEach(p => {
+            const data = new Date(p.createdAt).toLocaleDateString('pt-PT');
+            tbody.innerHTML += `<tr>
+                <td>${p.ervaAromatica}</td>
+                <td><span class="badge badge-${p.tipo}">${p.tipo}</span></td>
+                <td>${data}</td>
+                <td>${p.tipo==='pontual' ? (p.autorizacaoResponsavel ? '<span class="badge badge-ok">Autorizado</span>' : '<span class="badge badge-pendente">Pendente</span>') : '<span class="badge badge-ok">Ativo</span>'}</td>
+            </tr>`;
+        });
+        if (!planos.length) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);">Sem planos</td></tr>';
+
+        // Últimas 5 plantas
+        const tb2 = document.getElementById('dashboard-plantas');
+        tb2.innerHTML = '';
+        (Array.isArray(plantas) ? plantas.slice(-5).reverse() : []).forEach(p => {
+            tb2.innerHTML += `<tr><td>${p.lote||'–'}</td><td>${p.erva||'–'}</td><td>${p.temperatura||'–'}°C</td><td>${p.humidade||'–'}%</td></tr>`;
+        });
+        if (!plantas.length) tb2.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);">Sem plantas importadas</td></tr>';
+
+        // Alertas pendentes reais
+        try {
+            const rAlertas = await fetch(`${API}/alertas`, { headers: authHeaders() });
+            const alertas = await rAlertas.json();
+            const pendentes = Array.isArray(alertas) ? alertas.filter(a => a.estado === 'Pendente').length : 0;
+            document.getElementById('stat-alertas').innerText = pendentes;
+        } catch(e) {}
+
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// ===========================
+// PLANTAS
+// ===========================
+async function carregarPlantas() {
+    const tbody = document.getElementById('listaPlantas');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">A carregar...</td></tr>';
+    try {
+        const res = await fetch(`${API}/plantas`, { headers: authHeaders() });
+        plantasCache = await res.json();
+        renderPlantas(plantasCache);
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color:#dc2626;">Erro ao carregar plantas.</td></tr>';
+    }
+}
+
+function renderPlantas(lista) {
+    const tbody = document.getElementById('listaPlantas');
+    tbody.innerHTML = '';
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);">Sem plantas. Importe um CSV.</td></tr>';
+        return;
+    }
+    lista.forEach(p => {
+        tbody.innerHTML += `<tr>
+            <td><strong>${p.lote||'–'}</strong></td>
+            <td>${p.erva||'–'}</td>
+            <td>${p.temperatura ? p.temperatura+'°C' : '–'}</td>
+            <td>${p.humidade ? p.humidade+'%' : '–'}</td>
+        </tr>`;
+    });
+}
+
+function filtrarPlantas() {
+    const q = document.getElementById('filtroPlanta').value.toLowerCase();
+    const filtrado = plantasCache.filter(p =>
+        (p.erva||'').toLowerCase().includes(q) ||
+        (p.lote||'').toLowerCase().includes(q)
+    );
+    renderPlantas(filtrado);
+}
+
+// ===========================
+// PLANOS — FORMULÁRIO
+// ===========================
+function renderPlanoForm() {
+    const tipo = document.getElementById('tipoPlano').value;
+    const el   = document.getElementById('plano-dinamico');
+
+    if (tipo === 'regular') {
+        el.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                <div><label>Temperatura (°C)</label><input type="number" id="plano-temp" placeholder="Ex: 22"></div>
+                <div><label>Humidade (%)</label><input type="number" id="plano-hum" placeholder="Ex: 65"></div>
+                <div><label>Luminosidade (lux)</label><input type="number" id="plano-luz" placeholder="Ex: 500"></div>
+            </div>
+            <label>Plano de Rega</label><input type="text" id="plano-rega" placeholder="Ex: Rega diária 200ml">
+            <label>Fertilização</label><input type="text" id="plano-fertilizacao" placeholder="Ex: Adubo NPK semanal">
+            <label>Duração Prevista (dias)</label><input type="number" id="plano-duracao" placeholder="Ex: 30">`;
+    } else if (tipo === 'emergencia') {
+        el.innerHTML = `
+            <label>Problema Identificado</label><input type="text" id="plano-problema" placeholder="Ex: Praga de afídeos">
+            <label>Tipo de Intervenção</label><input type="text" id="plano-intervencao" placeholder="Ex: Aplicação de inseticida">
+            <label>Dosagem / Intensidade</label>
+            <select id="plano-intensidade"><option>Baixa</option><option>Média</option><option>Alta</option></select>
+            <label>Intervalo Mínimo entre Intervenções (minutos)</label>
+            <input type="number" id="plano-intervalo" placeholder="Ex: 60">`;
+    } else if (tipo === 'pontual') {
+        el.innerHTML = `
+            <div style="background:#fff7ed;padding:10px;border-left:4px solid orange;margin-bottom:10px;border-radius:4px;">
+                ⚠️ Plano Pontual requer autorização de <strong>Responsável ou Administrador</strong>.
+            </div>
+            <label>Descrição</label><textarea id="plano-descricao" placeholder="Descreve a intervenção pontual..."></textarea>
+            <label>Motivo</label><input type="text" id="plano-motivo" placeholder="Ex: Colheita antecipada por deterioração">`;
+    } else {
+        el.innerHTML = '';
+    }
+}
+
+function cancelarEdicaoPlano() {
+    editandoPlanoId = null;
+    document.getElementById('titulo-form-plano').innerText = '➕ Novo Plano';
+    document.getElementById('tipoPlano').value = '';
+    document.getElementById('plano-erva').selectedIndex = 0;
+    document.getElementById('plano-dinamico').innerHTML = '';
+    document.getElementById('msg-plano').innerHTML = '';
+}
+
+async function guardarPlano() {
+    const erva = document.getElementById('plano-erva').value;
+    const tipo = document.getElementById('tipoPlano').value;
+    const msgEl = document.getElementById('msg-plano');
+    msgEl.innerHTML = '';
+
+    if (!tipo) { msgEl.innerHTML = '<div class="msg-error">Seleciona o tipo de plano.</div>'; return; }
+
+    let dados = { ervaAromatica: erva, tipo };
+
+    if (tipo === 'regular') {
+        dados.temperatura           = document.getElementById('plano-temp')?.value;
+        dados.humidade              = document.getElementById('plano-hum')?.value;
+        dados.luminosidade          = document.getElementById('plano-luz')?.value;
+        dados.planoRega             = document.getElementById('plano-rega')?.value;
+        dados.fertilizacao          = document.getElementById('plano-fertilizacao')?.value;
+        dados.duracaoPrevistaDias   = document.getElementById('plano-duracao')?.value;
+        if (!dados.planoRega || !dados.fertilizacao || !dados.duracaoPrevistaDias) {
+            msgEl.innerHTML = '<div class="msg-error">Preenche todos os campos do plano regular.</div>'; return;
+        }
+    } else if (tipo === 'emergencia') {
+        dados.problema                      = document.getElementById('plano-problema')?.value;
+        dados.tipoIntervencao               = document.getElementById('plano-intervencao')?.value;
+        dados.dosagemIntensidade            = document.getElementById('plano-intensidade')?.value;
+        dados.intervaloMinIntervencoesMinutos = document.getElementById('plano-intervalo')?.value;
+        if (!dados.tipoIntervencao || !dados.intervaloMinIntervencoesMinutos) {
+            msgEl.innerHTML = '<div class="msg-error">Preenche os campos obrigatórios do plano de emergência.</div>'; return;
+        }
+    } else if (tipo === 'pontual') {
+        dados.descricao = document.getElementById('plano-descricao')?.value;
+        dados.motivo    = document.getElementById('plano-motivo')?.value;
+        if (!dados.descricao || !dados.motivo) {
+            msgEl.innerHTML = '<div class="msg-error">Preenche a descrição e o motivo.</div>'; return;
+        }
+    }
+
+    mostrarLoading(true);
+    try {
+        const url    = editandoPlanoId ? `${API}/planos/${editandoPlanoId}` : `${API}/planos`;
+        const method = editandoPlanoId ? 'PUT' : 'POST';
+
+        const res  = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(dados) });
+        const data = await res.json();
+
+        if (res.ok) {
+            msgEl.innerHTML = `<div class="msg-success">✅ Plano ${editandoPlanoId ? 'atualizado' : 'criado'} com sucesso!</div>`;
+            cancelarEdicaoPlano();
+            carregarPlanos();
+        } else {
+            msgEl.innerHTML = `<div class="msg-error">❌ ${data.erro || 'Erro ao guardar plano.'}</div>`;
+        }
+    } catch(e) {
+        msgEl.innerHTML = '<div class="msg-error">❌ Erro de ligação ao servidor.</div>';
+    }
+    mostrarLoading(false);
+}
+
+// ===========================
+// PLANOS — LISTAGEM
+// ===========================
+async function carregarPlanos() {
+    const tbody = document.getElementById('listaPlanos');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">A carregar...</td></tr>';
+    try {
+        const res  = await fetch(`${API}/planos`, { headers: authHeaders() });
+        planosCache = await res.json();
+
+        const filtro = document.getElementById('filtroTipoPlano').value;
+        const lista  = filtro ? planosCache.filter(p => p.tipo === filtro) : planosCache;
+
+        renderPlanos(lista);
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="5" style="color:#dc2626;">Erro ao carregar planos.</td></tr>';
+    }
+}
+
+function renderPlanos(lista) {
+    const tbody = document.getElementById('listaPlanos');
+    const user  = getUser();
+    tbody.innerHTML = '';
+
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);">Sem planos registados.</td></tr>';
+        return;
+    }
+
+    lista.forEach(p => {
+        const data = new Date(p.createdAt).toLocaleDateString('pt-PT');
+
+        let detalhes = '';
+        if (p.tipo === 'regular')    detalhes = `Rega: ${p.planoRega||'–'} · ${p.duracaoPrevistaDias||'–'} dias`;
+        if (p.tipo === 'emergencia') detalhes = `${p.tipoIntervencao||'–'} · ${p.dosagemIntensidade||'–'}`;
+        if (p.tipo === 'pontual')    detalhes = p.motivo || '–';
+
+        let acoes = '';
+        // Editar: Responsável e Admin
+        if (user?.perfil === 'Responsável' || user?.perfil === 'Administrador') {
+            acoes += `<button class="btn btn-sm btn-warning" onclick="editarPlano('${p._id}')">✏️</button> `;
+        }
+        // Autorizar pontual: Responsável e Admin
+        if (p.tipo === 'pontual' && !p.autorizacaoResponsavel &&
+            (user?.perfil === 'Responsável' || user?.perfil === 'Administrador')) {
+            acoes += `<button class="btn btn-sm" style="background:#166534;" onclick="autorizarPlano('${p._id}')">✅ Autorizar</button> `;
+        }
+        // Apagar: só Admin
+        if (user?.perfil === 'Administrador') {
+            acoes += `<button class="btn btn-sm btn-danger" onclick="apagarPlano('${p._id}')">🗑</button>`;
+        }
+
+        const estadoBadge = p.tipo === 'pontual'
+            ? (p.autorizacaoResponsavel
+                ? '<span class="badge badge-ok">Autorizado</span>'
+                : '<span class="badge badge-pendente">Pendente</span>')
+            : '';
+
+        tbody.innerHTML += `<tr class="plano-row">
+            <td>${p.ervaAromatica}</td>
+            <td><span class="badge badge-${p.tipo}">${p.tipo}</span> ${estadoBadge}</td>
+            <td style="font-size:12px;color:var(--muted);">${detalhes}</td>
+            <td style="font-size:12px;">${data}</td>
+            <td style="white-space:nowrap;">${acoes || '<span style="color:var(--muted);font-size:12px;">–</span>'}</td>
+        </tr>`;
+    });
+}
+
+async function editarPlano(id) {
+    mostrarLoading(true);
+    try {
+        const res  = await fetch(`${API}/planos/${id}`, { headers: authHeaders() });
+        const p    = await res.json();
+
+        editandoPlanoId = id;
+        document.getElementById('titulo-form-plano').innerText = '✏️ Editar Plano';
+        document.getElementById('plano-erva').value  = p.ervaAromatica;
+        document.getElementById('tipoPlano').value   = p.tipo;
+        renderPlanoForm();
+
+        // Preencher campos após renderizar
+        setTimeout(() => {
+            if (p.tipo === 'regular') {
+                document.getElementById('plano-temp').value          = p.limitesAmbientais?.temperatura || '';
+                document.getElementById('plano-hum').value           = p.limitesAmbientais?.humidade    || '';
+                document.getElementById('plano-luz').value           = p.limitesAmbientais?.luminosidade|| '';
+                document.getElementById('plano-rega').value          = p.planoRega       || '';
+                document.getElementById('plano-fertilizacao').value  = p.fertilizacao    || '';
+                document.getElementById('plano-duracao').value       = p.duracaoPrevistaDias || '';
+            } else if (p.tipo === 'emergencia') {
+                document.getElementById('plano-problema').value      = p.problema           || '';
+                document.getElementById('plano-intervencao').value   = p.tipoIntervencao    || '';
+                document.getElementById('plano-intensidade').value   = p.dosagemIntensidade || 'Baixa';
+                document.getElementById('plano-intervalo').value     = p.intervaloMinIntervencoesMinutos || '';
+            } else if (p.tipo === 'pontual') {
+                document.getElementById('plano-descricao').value     = p.descricao || '';
+                document.getElementById('plano-motivo').value        = p.motivo    || '';
+            }
+        }, 50);
+
+        // Scroll ao formulário
+        document.getElementById('card-form-plano').scrollIntoView({ behavior: 'smooth' });
+    } catch(e) {
+        alert('Erro ao carregar plano para edição.');
+    }
+    mostrarLoading(false);
+}
+
+async function apagarPlano(id) {
+    if (!confirm('Tens a certeza que queres apagar este plano?')) return;
+    mostrarLoading(true);
+    try {
+        const res = await fetch(`${API}/planos/${id}`, { method: 'DELETE', headers: authHeaders() });
+        if (res.ok) carregarPlanos();
+        else alert('Erro ao apagar.');
+    } catch(e) { alert('Erro de ligação.'); }
+    mostrarLoading(false);
+}
+
+async function autorizarPlano(id) {
+    if (!confirm('Autorizar este plano pontual?')) return;
+    mostrarLoading(true);
+    try {
+        const res  = await fetch(`${API}/planos/${id}/autorizar`, { method: 'PATCH', headers: authHeaders() });
+        const data = await res.json();
+        if (res.ok) { alert(data.mensagem); carregarPlanos(); carregarDashboard(); }
+        else alert(data.erro || 'Erro ao autorizar.');
+    } catch(e) { alert('Erro de ligação.'); }
+    mostrarLoading(false);
+}
+
+// ===========================
+// ALERTAS
+// ===========================
+async function carregarAlertas() {
+    try {
+        // Carregar modo atual
+        await carregarModo();
+
+        const estadoFiltro = document.getElementById('filtro-estado-alerta')?.value || '';
+        const nivelFiltro  = document.getElementById('filtro-nivel-alerta')?.value  || '';
+
+        const res    = await fetch(`${API}/alertas`, { headers: authHeaders() });
+        const alertas = await res.json();
+
+        const container = document.getElementById('lista-alertas');
+        if (!Array.isArray(alertas) || alertas.length === 0) {
+            container.innerHTML = '<div class="card"><h3>✅ Sem alertas registados</h3></div>';
+            return;
+        }
+
+        // Filtrar
+        let lista = alertas;
+        if (estadoFiltro) lista = lista.filter(a => a.estado === estadoFiltro);
+        if (nivelFiltro)  lista = lista.filter(a => a.nivel === nivelFiltro);
+
+        if (lista.length === 0) {
+            container.innerHTML = '<div class="card"><p>Nenhum alerta corresponde aos filtros.</p></div>';
+            return;
+        }
+
+        const user = getUser();
+        const isAdmin = user?.perfil === 'Administrador' || user?.perfil === 'Responsável';
+
+        container.innerHTML = lista.map(a => {
+            const nivelCor = a.nivel === 'Crítico' ? '#dc2626' : a.nivel === 'Aviso' ? '#d97706' : '#2563eb';
+            const estadoCor = a.estado === 'Resolvido' ? '#16a34a' : a.estado === 'Ignorado' ? '#6b7280' : nivelCor;
+            const acoes = isAdmin && a.estado === 'Pendente' ? `
+                <button class="btn" style="background:#16a34a;font-size:12px;padding:4px 10px;" onclick="resolverAlerta('${a._id}')">✅ Resolver</button>
+                <button class="btn" style="background:#6b7280;font-size:12px;padding:4px 10px;" onclick="ignorarAlerta('${a._id}')">🚫 Ignorar</button>
+            ` : '';
+            const justif = a.justificacao ? `<br><small style="color:var(--muted)">Justificação: ${a.justificacao}</small>` : '';
+            return `<div class="card" style="border-left:4px solid ${nivelCor};margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <span style="font-weight:bold;color:${nivelCor};">[${a.nivel}]</span>
+                        <span style="margin-left:8px;">${a.mensagem}</span>
+                        <br><small style="color:var(--muted)">Lote: ${a.loteCodigo || a.lote || '–'} | Por: ${a.criadoPor || '–'} | ${new Date(a.createdAt).toLocaleString('pt-PT')}</small>
+                        ${justif}
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                        <span style="background:${estadoCor};color:#fff;padding:2px 8px;border-radius:12px;font-size:12px;">${a.estado}</span>
+                        ${acoes}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Atualizar contador no dashboard
+        const pendentes = alertas.filter(a => a.estado === 'Pendente').length;
+        const el = document.getElementById('stat-alertas');
+        if (el) el.innerText = pendentes;
+
+    } catch(e) {
+        console.error('Erro ao carregar alertas:', e);
+    }
+}
+
+async function carregarModo() {
+    try {
+        const res = await fetch(`${API}/modo`, { headers: authHeaders() });
+        const data = await res.json();
+        const badge = document.getElementById('modo-badge');
+        if (badge) {
+            badge.textContent = data.modo === 'Automatico' ? '🤖 Automático' : '⚙️ Manual';
+            badge.style.color = data.modo === 'Automatico' ? '#15803d' : '#6b7280';
+        }
+        // Destacar botão ativo
+        const btnM = document.getElementById('btn-modo-manual');
+        const btnA = document.getElementById('btn-modo-auto');
+        if (btnM && btnA) {
+            btnM.style.opacity = data.modo === 'Manual' ? '1' : '0.5';
+            btnA.style.opacity = data.modo === 'Automatico' ? '1' : '0.5';
+        }
+    } catch(e) {}
+}
+
+async function alterarModo(modo) {
+    const user = getUser();
+    if (user?.perfil === 'Técnico') {
+        alert('Apenas Responsáveis e Administradores podem alterar o modo do sistema.');
+        return;
+    }
+    try {
+        const res = await fetch(`${API}/modo`, {
+            method: 'POST',
+            headers: authHeaders(),
+            body: JSON.stringify({ modo })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert(data.mensagem);
+            await carregarModo();
+        } else {
+            alert(data.erro || 'Erro ao alterar modo.');
+        }
+    } catch(e) {
+        alert('Erro de ligação.');
+    }
+}
+
+// ===========================
+// CSV
+// ===========================
+async function uploadCSV() {
+    const file   = document.getElementById('csvFile').files[0];
+    const msgEl  = document.getElementById('msg-csv');
+    msgEl.innerHTML = '';
+
+    if (!file) { msgEl.innerHTML = '<div class="msg-error">Escolhe um ficheiro CSV.</div>'; return; }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    mostrarLoading(true);
+    try {
+        const res  = await fetch(`${API}/csv/upload`, { method: 'POST', body: formData });
+        const data = await res.json();
+        if (res.ok) {
+            msgEl.innerHTML = `<div class="msg-success">✅ CSV importado! ${data.total} registos adicionados.</div>`;
+        } else {
+            msgEl.innerHTML = `<div class="msg-error">❌ ${data.erro}</div>`;
+        }
+    } catch(e) {
+        msgEl.innerHTML = '<div class="msg-error">❌ Erro de ligação ao servidor.</div>';
+    }
+    mostrarLoading(false);
+}
+
+function downloadExemplo() {
+    const csv = 'lote,erva,temperatura,humidade\nL-001,Manjericão,22,65\nL-002,Hortelã,20,70\nL-003,Alecrim,25,45\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'exemplo_plantas.csv';
+    a.click();
+}
+
+// ===========================
+// UTILIZADORES
+// ===========================
+async function criarUtilizador() {
+    const nome     = document.getElementById('novoNome').value.trim();
+    const email    = document.getElementById('novoEmail').value.trim();
+    const password = document.getElementById('novoPassword').value;
+    const perfil   = document.getElementById('novoPerfil').value;
+    const msgEl    = document.getElementById('msg-utilizadores');
+    msgEl.innerHTML = '';
+
+    if (!nome || !email || !password) {
+        msgEl.innerHTML = '<div class="msg-error">Preenche todos os campos.</div>'; return;
+    }
+
+    mostrarLoading(true);
+    try {
+        const res  = await fetch(`${API}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, email, password, perfil })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            msgEl.innerHTML = '<div class="msg-success">✅ Utilizador criado com sucesso!</div>';
+            document.getElementById('novoNome').value = '';
+            document.getElementById('novoEmail').value = '';
+            document.getElementById('novoPassword').value = '';
+            carregarUtilizadores();
+        } else {
+            msgEl.innerHTML = `<div class="msg-error">❌ ${data.erro || 'Erro ao criar utilizador.'}</div>`;
+        }
+    } catch(e) {
+        msgEl.innerHTML = '<div class="msg-error">❌ Erro de ligação ao servidor.</div>';
+    }
+    mostrarLoading(false);
+}
+
+function getMe() { return getUser(); }
+
+function isMe(user) {
+    const me = getMe();
+    if (!me || !user) return false;
+    return (me.email && user.email && me.email === user.email);
+}
+
+async function carregarUtilizadores() {
+    const tabela = document.getElementById('listaUtilizadores');
+    tabela.innerHTML = '<tr><td colspan="4" style="text-align:center;">A carregar...</td></tr>';
+    try {
+        const res   = await fetch(`${API}/utilizadores`, { headers: authHeaders() });
+        const users = await res.json();
+        tabela.innerHTML = '';
+        users.forEach(user => {
+            const self = isMe(user);
+            tabela.innerHTML += `<tr style="${self ? 'background:#f0fdf4;' : ''}">
+                <td>${user.nome} ${self ? '<strong>(tu)</strong>' : ''}</td>
+                <td>${user.email}</td>
+                <td>${self
+                    ? `<span class="badge badge-ok">${user.perfil}</span>`
+                    : `<select onchange="atualizarPerfil('${user._id}', this.value)" style="width:auto;margin:0;padding:5px;">
+                        <option ${user.perfil==='Técnico'?'selected':''}>Técnico</option>
+                        <option ${user.perfil==='Responsável'?'selected':''}>Responsável</option>
+                        <option ${user.perfil==='Administrador'?'selected':''}>Administrador</option>
+                       </select>`
+                }</td>
+                <td>${self
+                    ? '<span style="color:var(--muted);font-size:12px;">Utilizador atual</span>'
+                    : `<button class="btn btn-sm btn-danger" onclick="eliminarUtilizador('${user._id}')">🗑 Eliminar</button>`
+                }</td>
+            </tr>`;
+        });
+        if (!users.length) tabela.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);">Sem utilizadores.</td></tr>';
+    } catch(e) {
+        tabela.innerHTML = '<tr><td colspan="4" style="color:#dc2626;">Erro ao carregar.</td></tr>';
+    }
+}
+
+async function atualizarPerfil(id, perfil) {
+    mostrarLoading(true);
+    try {
+        await fetch(`${API}/utilizadores/${id}`, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ perfil })
+        });
+        carregarUtilizadores();
+    } catch(e) {}
+    mostrarLoading(false);
+}
+
+async function eliminarUtilizador(id) {
+    if (!confirm('Eliminar este utilizador?')) return;
+    mostrarLoading(true);
+    try {
+        const res = await fetch(`${API}/utilizadores/${id}`, { method: 'DELETE', headers: authHeaders() });
+        if (res.ok) carregarUtilizadores();
+        else alert('Erro ao eliminar.');
+    } catch(e) {}
+    mostrarLoading(false);
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+//CSV
+function exportarCSV() {
+
+    window.open(
+        `${API}/export/planos`,
+        "_blank"
+    );
+
+}
+
+async function exportarHCSV() {
+    try {
+        const res = await fetch(`${API}/export/historico`, {
+            headers: authHeaders()
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            alert(err.erro || "Erro ao exportar CSV");
+            return;
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "historico.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
+
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao exportar CSV");
+    }
+}
+
+// Historico
+async function carregarHistorico() {
+  try {
+    const res = await fetch(`${API}/historico`, {
+      headers: authHeaders()
+    });
+
+    const data = await res.json();
+
+    const tbody = document.getElementById("listaHistorico");
+    tbody.innerHTML = "";
+
+    data.forEach(h => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${new Date(h.createdAt).toLocaleString()}</td>
+          <td>${h.utilizador || '-'}</td>
+          <td>${h.acao || '-'}</td>
+          <td>${h.descricao || '-'}</td>
+        </tr>
+      `;
+    });
+
+  } catch (err) {
+    console.error("Erro ao carregar histórico:", err);
+  }
+}
+
+
+// ===========================
+// LOTES
+// ===========================
+async function carregarLotes() {
+    try {
+        const res = await fetch(`${API}/lotes`, { headers: authHeaders() });
+        const lotes = await res.json();
+        const tbody = document.getElementById("listaLotes");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        if (!Array.isArray(lotes) || lotes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);">Sem lotes registados.</td></tr>';
+            return;
+        }
+        const corEstado = { "ativo": "#15803d", "concluído": "#6b7280", "comprometido": "#dc2626" };
+        lotes.forEach(l => {
+            tbody.innerHTML += `<tr>
+                <td><strong>${l.codigo || '–'}</strong></td>
+                <td>${l.nome || '–'}</td>
+                <td>${l.area ? l.area + ' m²' : '–'}</td>
+                <td><span style="background:${corEstado[l.estado]||'#6b7280'};color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;">${l.estado}</span></td>
+                <td>${new Date(l.createdAt||Date.now()).toLocaleDateString('pt-PT')}</td>
+            </tr>`;
+        });
+    } catch(e) { console.error('Erro ao carregar lotes:', e); }
+}
+
+async function criarLote() {
+    const codigo = document.getElementById("lote-codigo").value.trim();
+    const nome   = document.getElementById("lote-nome").value.trim();
+    const area   = Number(document.getElementById("lote-area").value);
+    const estado = document.getElementById("lote-estado").value;
+    const msg    = document.getElementById("msg-lote");
+    msg.innerHTML = "";
+    if (!codigo) { msg.innerHTML = '<span style="color:red">Código obrigatório.</span>'; return; }
+    mostrarLoading(true);
+    try {
+        const res  = await fetch(`${API}/lotes`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ codigo, nome, area, estado })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            msg.innerHTML = '<span style="color:green">✅ Lote criado!</span>';
+            document.getElementById("lote-codigo").value = "";
+            document.getElementById("lote-nome").value   = "";
+            document.getElementById("lote-area").value   = "";
+            carregarLotes();
+        } else {
+            msg.innerHTML = `<span style="color:red">❌ ${data.erro}</span>`;
+        }
+    } catch(e) { msg.innerHTML = '<span style="color:red">Erro de ligação.</span>'; }
+    mostrarLoading(false);
+}
+
+// resolverAlerta e ignorarAlerta (usados nos botões dos alertas)
+async function resolverAlerta(id) {
+    try {
+        const res = await fetch(`${API}/alertas/${id}/resolver`, {
+            method: "PATCH",
+            headers: authHeaders()
+        });
+        const data = await res.json();
+        if (!res.ok) alert(data.erro || 'Erro ao resolver.');
+        carregarAlertas();
+    } catch(e) { alert('Erro de ligação.'); }
+}
+
+async function ignorarAlerta(id) {
+    const justificacao = prompt("Justificação obrigatória para ignorar o alerta:");
+    if (!justificacao || justificacao.trim() === '') return;
+
+    try {
+        const res = await fetch(`${API}/alertas/${id}/ignorar`, {
+            method: "PATCH",
+            headers: authHeaders(),
+            body: JSON.stringify({ justificacao })
+        });
+        const data = await res.json();
+        if (!res.ok) alert(data.erro || 'Erro ao ignorar.');
+        carregarAlertas();
+    } catch(e) { alert('Erro de ligação.'); }
+}
+
+// ===========================
+// MEDIÇÕES
+// ===========================
+
+// Cache dos planos carregados para o select de medições
+let planosCache_medicao = [];
+
+async function carregarPlanosParaMedicao() {
+    try {
+        const res = await fetch(`${API}/planos`, { headers: authHeaders() });
+        planosCache_medicao = await res.json();
+        const select = document.getElementById("med-plano");
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Selecionar Plano --</option>';
+        if (!Array.isArray(planosCache_medicao)) return;
+        // Mostrar apenas planos do tipo regular (que têm limites ambientais)
+        planosCache_medicao.forEach(p => {
+            const loteInfo = p.lote ? ` (Lote: ${p.lote.codigo || p.lote})` : '';
+            select.innerHTML += `<option value="${p._id}">${p.ervaAromatica} — ${p.tipo}${loteInfo}</option>`;
+        });
+    } catch(e) { console.error('Erro ao carregar planos:', e); }
+}
+
+function preencherInfoPlano() {
+    const planoId = document.getElementById("med-plano").value;
+    const infoDiv = document.getElementById("med-plano-info");
+    if (!planoId || !Array.isArray(planosCache_medicao)) { infoDiv.style.display = 'none'; return; }
+    const plano = planosCache_medicao.find(p => p._id === planoId);
+    if (!plano) { infoDiv.style.display = 'none'; return; }
+    infoDiv.style.display = 'block';
+    document.getElementById("med-plano-erva").textContent = plano.ervaAromatica || '–';
+    document.getElementById("med-plano-temp").textContent = plano.limitesAmbientais?.temperatura ?? '–';
+    document.getElementById("med-plano-hum").textContent  = plano.limitesAmbientais?.humidade ?? '–';
+    document.getElementById("med-plano-luz").textContent  = plano.limitesAmbientais?.luminosidade ?? '–';
+}
+
+async function registarMedicao() {
+    const planoId     = document.getElementById("med-plano").value;
+    const temperatura = Number(document.getElementById("med-temp").value);
+    const humidade    = Number(document.getElementById("med-hum").value);
+    const luminosidade= Number(document.getElementById("med-luz").value);
+    const msgEl       = document.getElementById("msg-medicao");
+    msgEl.innerHTML   = "";
+
+    if (!planoId) { msgEl.innerHTML = '<span style="color:red">Seleciona um plano.</span>'; return; }
+    if (isNaN(temperatura) || isNaN(humidade) || isNaN(luminosidade) ||
+        document.getElementById("med-temp").value === "" ||
+        document.getElementById("med-hum").value  === "" ||
+        document.getElementById("med-luz").value  === "") {
+        msgEl.innerHTML = '<span style="color:red">Preenche todos os valores.</span>'; return;
+    }
+
+    // Obter o lote do plano selecionado
+    const plano = planosCache_medicao.find(p => p._id === planoId);
+    if (!plano?.lote) {
+        msgEl.innerHTML = '<span style="color:red">Este plano não tem lote associado. Associa um lote ao plano primeiro.</span>';
+        return;
+    }
+    const loteId = plano.lote._id || plano.lote;
+
+    mostrarLoading(true);
+    try {
+        const res  = await fetch(`${API}/medicoes`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ lote: loteId, temperatura, humidade, luminosidade })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            let msg = '✅ Medição registada!';
+            if (data.alertasGerados > 0) {
+                msg += ` ⚠️ ${data.alertasGerados} alerta(s) gerado(s).`;
+                if (data.acaoAutomatica) {
+                    msg += ` 🤖 ${data.acaoAutomatica.join(", ")}.`;
+                }
+            }
+            msgEl.innerHTML = `<span style="color:green">${msg}</span>`;
+            document.getElementById("med-temp").value = "";
+            document.getElementById("med-hum").value  = "";
+            document.getElementById("med-luz").value  = "";
+            document.getElementById("med-plano").value = "";
+            document.getElementById("med-plano-info").style.display = "none";
+            carregarMedicoes();
+        } else {
+            msgEl.innerHTML = `<span style="color:red">❌ ${data.erro}</span>`;
+        }
+    } catch(e) {
+        msgEl.innerHTML = '<span style="color:red">Erro de ligação.</span>';
+    }
+    mostrarLoading(false);
+}
+
+async function carregarMedicoes() {
+    try {
+        const res = await fetch(`${API}/medicoes`, { headers: authHeaders() });
+        const medicoes = await res.json();
+        const tbody = document.getElementById("listaMedicoes");
+        tbody.innerHTML = "";
+        if (!Array.isArray(medicoes) || medicoes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);">Sem medições registadas.</td></tr>';
+            return;
+        }
+        medicoes.forEach(m => {
+            const loteNome = m.lote?.codigo ? `${m.lote.codigo}` : (m.lote?.nome || '–');
+            // Encontrar erva do plano associado
+            const plano = Array.isArray(planosCache_medicao)
+                ? planosCache_medicao.find(p => (p.lote?._id || p.lote) === (m.lote?._id || m.lote))
+                : null;
+            const erva = plano?.ervaAromatica || '–';
+            tbody.innerHTML += `
+            <tr>
+                <td>${loteNome}</td>
+                <td>${erva}</td>
+                <td>${m.temperatura ?? '–'}°C</td>
+                <td>${m.humidade ?? '–'}%</td>
+                <td>${m.luminosidade ?? '–'} lux</td>
+                <td>${new Date(m.dataMedicao).toLocaleString('pt-PT')}</td>
+            </tr>`;
+        });
+    } catch(e) {
+        console.error('Erro ao carregar medições:', e);
+    }
+}
+
+async function carregarLotesPlano() {
+    try {
+        const res = await fetch(`${API}/lotes`, { headers: authHeaders() });
+        const lotes = await res.json();
+        const select = document.getElementById("plano-lote");
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Selecionar Lote --</option>';
+        lotes.forEach(l => {
+            select.innerHTML += `<option value="${l._id}">${l.codigo ? l.codigo + ' – ' : ''}${l.nome || l._id}</option>`;
+        });
+    } catch(e) {}
+}
+</script>
+<script src="js/alertas.js"></script>
+<script src="js/historico.js"></script>
+<script src="js/relatorios.js"></script>
+</body>
+</html>
+
