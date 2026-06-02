@@ -77,7 +77,6 @@ O servidor fica disponível em **http://localhost:5000**
 GreenHerb/
 ├── index.html          # App principal (SPA)
 ├── login.html          # Página de login
-├── register.html       # Página de registo
 ├── sw.js               # Service Worker (offline)
 ├── utilizadores.js     # Lógica de utilizadores (legado)
 ├── css/
